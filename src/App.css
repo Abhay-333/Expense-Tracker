@@ -17,3 +17,15 @@
   font-family: InriaBold;
   src: url(./resources/Inria_Serif/InriaSerif-Bold.ttf);
 }
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Inria;
+}
+html,
+body {
+  height: 100%;
+  width: 100%;
+}

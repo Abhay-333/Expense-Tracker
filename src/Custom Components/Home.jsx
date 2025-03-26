@@ -8,8 +8,9 @@ const Home = () => {
   const navigate = useNavigate();
 
     const handleGetStarted = () => {
-        navigate('/dashboard');
+        navigate('/userform');
       };
+
     return (
     <div className="flex h-screen">
       <div className="w-1/2 flex flex-col justify-center p-16">

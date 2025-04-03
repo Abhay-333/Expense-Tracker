@@ -1,60 +1,151 @@
-import React, { useState } from 'react';
-import AIPowered from "../resources/AI Powered.png"
-// import { db } from './firebase';
-// import { collection, addDoc } from 'firebase/firestore';
+import React, { useEffect, useState } from "react";
+import AIPowered from "../resources/AI Powered.png";
+import { db } from "../firebase.config";
+import { useNavigate } from "react-router-dom";
+import { collection, addDoc } from "firebase/firestore";
 
 const UserForm = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: '',
-    salary: '',
-    monthlyExpense: '',
-    passiveIncome: '',
-    properties: '',
-    insurance: '',
-    loan: '',
+    totalBalance: "",
+    budgetUsed: "",
+    debtsPending: "",
+    pieChartData: {
+      Rent: "",
+      Food: "",
+      Salary: "",
+      Freelance: "",
+      InvestmentIncome: "",
+    },
+    barChartData: [
+      { month: "March", income: "", expenses: "" },
+      { month: "April", income: "", expenses: "" },
+      { month: "May", income: "", expenses: "" },
+      { month: "June", income: "", expenses: "" },
+      { month: "July", income: "", expenses: "" },
+      { month: "August", income: "", expenses: "" },
+    ],
   });
 
   const handleChange = (e) => {
-    const { username, value } = e.target;
-    setFormData({ ...formData, [username]: value });
+    const { name, value } = e.target;
+    if (name in formData.pieChartData) {
+      setFormData({
+        ...formData,
+        pieChartData: { ...formData.pieChartData, [name]: value },
+      });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const handleBarChartChange = (index, field, value) => {
+    const updatedBarChartData = [...formData.barChartData];
+    updatedBarChartData[index][field] = value;
+    setFormData({ ...formData, barChartData: updatedBarChartData });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await addDoc(collection(db, 'userFormData'), formData);
-      alert('Data submitted successfully!');
+      await addDoc(collection(db, "userFormData"), formData);
+      console.log(formData);
+      alert("Data submitted successfully!");
+      navigate("/landing-page");
     } catch (error) {
-      console.error('Error submitting data: ', error);
+      console.error("Error submitting data: ", error);
     }
   };
 
   return (
     <div className="flex h-screen">
-      {/* Left Section */}
       <div className="w-1/2 bg-blue-100 flex flex-col justify-center items-center p-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">AI-powered Financial Assistant.</h1>
+        <h1 className="text-4xl font-bold text-gray-800 mb-4">
+          AI-powered Financial Assistant.
+        </h1>
         <img src={AIPowered} alt="AI Finance" className="w-[90%]" />
       </div>
+      <form
+        onSubmit={handleSubmit}
+        className="w-1/2 p-8 overflow-y-auto bg-gray-200 rounded-lg flex flex-col"
+      >
+        <label>Total Balance</label>
+        <input
+          type="number"
+          name="totalBalance"
+          value={formData.totalBalance}
+          onChange={handleChange}
+          className="w-full p-2 border rounded mb-2"
+          required
+        />
 
-      {/* Right Section */}
-      <form onSubmit={handleSubmit} className="w-1/2 p-8 bg-gray-200 rounded-lg flex flex-col justify-between">
-        <div className="flex-grow overflow-y-auto">
-          {Object.keys(formData).map((field) => (
-            <div key={field} className="mb-4">
-              <label className="block mb-2 capitalize">{field.replace(/([A-Z])/g, ' $1')}</label>
-              <input
-                type="text"
-                name={field}
-                value={formData[field]}
-                onChange={handleChange}
-                className="w-full p-2 border rounded border-purple-400"
-                required
-              />
-            </div>
-          ))}
-        </div>
-        <button type="submit" className="bg-gray-700 text-white py-2 px-4 rounded self-center mt-4">Submit</button>
+        <label>Budget Used (%)</label>
+        <input
+          type="number"
+          name="budgetUsed"
+          value={formData.budgetUsed}
+          onChange={handleChange}
+          className="w-full p-2 border rounded mb-2"
+          required
+        />
+
+        <label>Debts Pending</label>
+        <input
+          type="number"
+          name="debtsPending"
+          value={formData.debtsPending}
+          onChange={handleChange}
+          className="w-full p-2 border rounded mb-2"
+          required
+        />
+
+        <h3 className="mt-4">Pie Chart Data</h3>
+        {Object.keys(formData.pieChartData).map((key) => (
+          <div key={key} className="mb-2">
+            <label>{key}</label>
+            <input
+              type="number"
+              name={key}
+              value={formData.pieChartData[key]}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+        ))}
+
+        <h3 className="mt-4">Bar Chart Data (Income & Expenses)</h3>
+        {formData.barChartData.map((data, index) => (
+          <div key={index} className="mb-2">
+            <label>{data.month} Income</label>
+            <input
+              type="number"
+              value={data.income}
+              onChange={(e) =>
+                handleBarChartChange(index, "income", e.target.value)
+              }
+              className="w-full p-2 border rounded mb-1"
+              required
+            />
+            <label>{data.month} Expenses</label>
+            <input
+              type="number"
+              value={data.expenses}
+              onChange={(e) =>
+                handleBarChartChange(index, "expenses", e.target.value)
+              }
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+        ))}
+
+        <button
+          type="submit"
+          className="bg-gray-700 text-white py-2 px-4 rounded mt-4"
+        >
+          Submit
+        </button>
       </form>
     </div>
   );

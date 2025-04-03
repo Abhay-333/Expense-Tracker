@@ -7,7 +7,7 @@ const App = () => {
   const [input, setInput] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const ai = new GoogleGenerativeAI(import.meta.env.VITE_API_KEY);
+  const ai = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
 
   const sendMessage = async () => {

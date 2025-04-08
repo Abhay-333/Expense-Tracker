@@ -1,28 +1,53 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { FaSearch, FaHome, FaWallet, FaUser, FaMoneyBillWave, FaRobot, FaPlus } from 'react-icons/fa';
+import { FaSearch } from 'react-icons/fa';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase.config';
 
 const MainContent = () => {
+  const [userData, setUserData] = useState({
+    totalBalance: 0,
+    budgetUsed: 0,
+    debtsPending: 0,
+    pieChartData: {
+      Rent: 0,
+      Food: 0,
+      Salary: 0,
+      Freelance: 0,
+      InvestmentIncome: 0,
+    },
+    barChartData: []
+  });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "userFormData"));
+        // Get the latest document (assuming we want the most recent entry)
+        const latestDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+        if (latestDoc) {
+          const data = latestDoc.data();
+          setUserData(data);
+        }
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Transform pieChartData for expenses
   const pieDataExpenses = [
-    { name: "Rent", value: 5000, color: "#FF8042" },
-    { name: "Food", value: 3000, color: "#00C49F" },
-    { name: "Utilities", value: 2000, color: "#FFBB28" },
-    { name: "Groceries", value: 4000, color: "#FF6666" },
+    { name: "Rent", value: Number(userData.pieChartData.Rent), color: "#FF8042" },
+    { name: "Food", value: Number(userData.pieChartData.Food), color: "#00C49F" },
   ];
 
+  // Transform pieChartData for income
   const pieDataIncome = [
-    { name: "Salary", value: 15000, color: "#0088FE" },
-    { name: "Freelance", value: 10000, color: "#00C49F" },
-    { name: "Investment Income", value: 2000, color: "#FFBB28" },
-  ];
-
-  const barData = [
-    { month: "March", income: 10000, expenses: 5000 },
-    { month: "April", income: 15000, expenses: 7500 },
-    { month: "May", income: 20000, expenses: 10000 },
-    { month: "June", income: 25000, expenses: 12500 },
-    { month: "July", income: 27000, expenses: 15000 },
-    { month: "August", income: 30000, expenses: 17000 },
+    { name: "Salary", value: Number(userData.pieChartData.Salary), color: "#0088FE" },
+    { name: "Freelance", value: Number(userData.pieChartData.Freelance), color: "#00C49F" },
+    { name: "Investment Income", value: Number(userData.pieChartData.InvestmentIncome), color: "#FFBB28" },
   ];
 
   return (
@@ -41,15 +66,15 @@ const MainContent = () => {
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded shadow-md">
           <p>Total Balance</p>
-          <h2 className="text-xl font-bold">Rs. 20,528</h2>
+          <h2 className="text-xl font-bold">Rs. {Number(userData.totalBalance).toLocaleString()}</h2>
         </div>
         <div className="bg-white p-4 rounded shadow-md">
           <p>Budget Used</p>
-          <h2 className="text-xl font-bold">79%</h2>
+          <h2 className="text-xl font-bold">{userData.budgetUsed}%</h2>
         </div>
         <div className="bg-white p-4 rounded shadow-md">
           <p>Debts Pending</p>
-          <h2 className="text-xl font-bold">0</h2>
+          <h2 className="text-xl font-bold">Rs. {Number(userData.debtsPending).toLocaleString()}</h2>
         </div>
         <div className="bg-white p-4 rounded shadow-md">
           <p>Goals Completed</p>
@@ -83,7 +108,7 @@ const MainContent = () => {
         {/* Bar Chart */}
         <div className="bg-white p-6 rounded shadow-md">
           <h3 className="font-bold mb-4">Last 6 Months Income and Expenses</h3>
-          <BarChart width={500} height={250} data={barData}>
+          <BarChart width={500} height={250} data={userData.barChartData}>
             <XAxis dataKey="month" />
             <YAxis />
             <Tooltip />

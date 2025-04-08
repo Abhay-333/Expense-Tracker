@@ -21,13 +21,12 @@ function App() {
           <Route path="budget" element={<Budget />}></Route>
           <Route path="account" element={<Account />}></Route>
           <Route path="debts" element={<Debts />}></Route>
+          <Route path="ai" element={<AI />}></Route>
         </Route>
-        
-        <Route path="/budget" element={<Budget />}></Route>
-        <Route path="/ai" element={<AI />}></Route>
       </Routes>
     </>
   );
 }
 
 export default App;
+

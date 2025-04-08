@@ -12,7 +12,9 @@ const SideNav = () => {
                 <Link to='budget' className="mb-4 flex items-center"><FaWallet className="mr-2" /> Budget</Link>
                 <Link to='account' className="mb-4 flex items-center"><FaUser className="mr-2" /> Account</Link>
                 <Link to='debts' className="mb-4 flex items-center"><FaMoneyBillWave className="mr-2" /> Debts</Link>
-                {/* <Link to='dashboard' className="mb-4 flex items-center"><FaRobot className="mr-2" /> AI Assistant</Link> */}
+                <Link to='ai' className="mb-4 flex items-center">
+                  <FaRobot className="mr-2" /> AI Assistant
+                </Link>
               </ul>
             </nav>
             <button className="w-full bg-blue-500 text-white py-2 rounded mt-4 flex items-center justify-center">

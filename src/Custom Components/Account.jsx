@@ -1,11 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaEdit } from "react-icons/fa";
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase.config';
 
 const Account = () => {
-  const [accounts] = useState([
-    { name: "Cash", income: 48500, expenses: 33972, balance: 14528 },
-    { name: "State Bank of India", income: 38000, expenses: 42000, balance: 6000 },
-  ]);
+  const [accountData, setAccountData] = useState({
+    accounts: [],
+    totalIncome: 0,
+    totalExpenses: 0,
+    totalBalance: 0
+  });
+
+  useEffect(() => {
+    const fetchAccountData = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "userFormData"));
+        const latestDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+        
+        if (latestDoc) {
+          const data = latestDoc.data();
+          
+          // Calculate income from pieChartData
+          const totalIncome = Number(data.pieChartData.Salary) + 
+                            Number(data.pieChartData.Freelance) + 
+                            Number(data.pieChartData.InvestmentIncome);
+          
+          // Calculate expenses from pieChartData
+          const totalExpenses = Number(data.pieChartData.Rent) + 
+                              Number(data.pieChartData.Food);
+
+          // Create accounts array
+          const accountsArray = [
+            {
+              name: "Primary Account",
+              income: totalIncome * 0.7, // 70% of income goes to primary account
+              expenses: totalExpenses * 0.8, // 80% of expenses from primary account
+              balance: (totalIncome * 0.7) - (totalExpenses * 0.8)
+            },
+            {
+              name: "Savings Account",
+              income: totalIncome * 0.3, // 30% of income goes to savings
+              expenses: totalExpenses * 0.2, // 20% of expenses from savings
+              balance: (totalIncome * 0.3) - (totalExpenses * 0.2)
+            }
+          ];
+
+          setAccountData({
+            accounts: accountsArray,
+            totalIncome: totalIncome,
+            totalExpenses: totalExpenses,
+            totalBalance: totalIncome - totalExpenses
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching account data: ", error);
+      }
+    };
+
+    fetchAccountData();
+  }, []);
 
   return (
     <div className="p-6 bg-white shadow-md rounded-lg h-full w-full">
@@ -17,19 +70,19 @@ const Account = () => {
       <div className="grid grid-cols-4 gap-4 text-center bg-gray-100 p-4 rounded-lg">
         <div>
           <p className="text-gray-500 text-sm">TOTAL ACCOUNTS</p>
-          <p className="text-lg font-bold">{accounts.length}</p>
+          <p className="text-lg font-bold">{accountData.accounts.length}</p>
         </div>
         <div>
           <p className="text-gray-500 text-sm">TOTAL INCOME</p>
-          <p className="text-lg font-bold">Rs. 86,500</p>
+          <p className="text-lg font-bold">Rs. {accountData.totalIncome.toLocaleString()}</p>
         </div>
         <div>
           <p className="text-gray-500 text-sm">TOTAL EXPENSES</p>
-          <p className="text-lg font-bold">Rs. 75,972</p>
+          <p className="text-lg font-bold">Rs. {accountData.totalExpenses.toLocaleString()}</p>
         </div>
         <div>
           <p className="text-gray-500 text-sm">TOTAL BALANCE</p>
-          <p className="text-lg font-bold text-green-600">Rs. 20,528</p>
+          <p className="text-lg font-bold text-green-600">Rs. {accountData.totalBalance.toLocaleString()}</p>
         </div>
       </div>
 
@@ -44,7 +97,7 @@ const Account = () => {
           </tr>
         </thead>
         <tbody>
-          {accounts.map((account, index) => (
+          {accountData.accounts.map((account, index) => (
             <tr key={index} className="border-b">
               <td className="p-3">{account.name}</td>
               <td className="p-3">Rs. {account.income.toLocaleString()}</td>

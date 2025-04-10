@@ -51,7 +51,7 @@ const UserForm = () => {
       await addDoc(collection(db, "userFormData"), formData);
       console.log(formData);
       alert("Data submitted successfully!");
-      navigate("/landing-page");
+      navigate("/landing-page/dashboard"); // This will now work with the protected route logic
     } catch (error) {
       console.error("Error submitting data: ", error);
     }

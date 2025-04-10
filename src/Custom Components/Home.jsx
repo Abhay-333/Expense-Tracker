@@ -1,7 +1,7 @@
 import React from 'react'
-import landingPage from '../resources/landing page.png'
-import logo from '../resources/logo.png'
+import landingPage from '../resources/landing-page.jpg'
 import { useNavigate } from 'react-router-dom';
+// import logo from '../resources/logo.png'
   
 
 const Home = () => {

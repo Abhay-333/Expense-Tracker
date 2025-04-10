@@ -19,7 +19,8 @@ const Login = () => {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        navigate('/landing-page/dashboard');
+        // Change this to navigate to home instead of landing-page
+        navigate('/home');
       }
     });
 
@@ -43,7 +44,8 @@ const Login = () => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       if (result.user) {
-        navigate('/landing-page/dashboard');
+        // Change this to navigate to home instead of landing-page
+        navigate('/home');
       }
     } catch (error) {
       console.error('Error signing in with Google:', error);

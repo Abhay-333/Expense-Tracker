@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { FaSync } from 'react-icons/fa';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase.config';
@@ -90,7 +90,7 @@ const MainContent = () => {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded shadow-md">
           <p>Total Balance</p>
           <h2 className="text-xl font-bold">Rs. {Number(userData.totalBalance).toLocaleString()}</h2>
@@ -110,11 +110,11 @@ const MainContent = () => {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pie Charts */}
         <div className="bg-white p-6 rounded shadow-md">
           <h3 className="font-bold mb-4">This Month Expenses vs Income</h3>
-          <div className="flex justify-around">
+          <div className="flex flex-col md:flex-row justify-around">
             <PieChart width={200} height={200}>
               <Pie data={pieDataExpenses} dataKey="value" outerRadius={80}>
                 {pieDataExpenses.map((entry, index) => (
@@ -134,15 +134,22 @@ const MainContent = () => {
 
         {/* Bar Chart */}
         <div className="bg-white p-6 rounded shadow-md">
-          <h3 className="font-bold mb-4">Current Month Income and Expenses</h3>
-          <BarChart width={500} height={250} data={userData.barChartData}>
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="income" fill="#00C49F" />
-            <Bar dataKey="expenses" fill="#8884d8" />
-          </BarChart>
+          <h3 className="font-bold mb-4">Last 6 Months Income and Expenses</h3>
+          <div className="w-full h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={userData.barChartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="income" fill="#00C49F" name="Monthly Income" />
+                <Bar dataKey="expenses" fill="#FF8042" name="Monthly Expenses" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </main>

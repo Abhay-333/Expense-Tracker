@@ -17,7 +17,7 @@ const SideNav = () => {
   };
 
   return (
-    <aside className="w-64 bg-white shadow-md p-5 h-full">
+    <aside className="w-60 bg-white shadow-md p-5 h-full">
       <h1 className="text-xl font-bold mb-6 flex items-center">
         <span className="text-blue-500 mr-2">◆</span>FinanceAdvisor
       </h1>

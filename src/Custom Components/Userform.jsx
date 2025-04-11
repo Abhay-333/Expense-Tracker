@@ -59,8 +59,14 @@ const UserForm = () => {
       InvestmentIncome: "",
     },
     barChartData: [
-      { month: new Date().toLocaleString('default', { month: 'short' }), income: '', expenses: '' }
+      { month: 'Jan', income: '', expenses: '' },
+      { month: 'Feb', income: '', expenses: '' },
+      { month: 'Mar', income: '', expenses: '' },
+      { month: 'Apr', income: '', expenses: '' },
+      { month: 'May', income: '', expenses: '' },
+      { month: 'Jun', income: '', expenses: '' },
     ],
+    monthlyIncome: "",
     // Add account data
     accounts: [
       {
@@ -148,6 +154,20 @@ const UserForm = () => {
     });
   };
 
+  const handleMonthlyIncomeChange = (value) => {
+    const income = value;
+    const updatedBarChartData = formData.barChartData.map(item => ({
+      ...item,
+      income: income
+    }));
+    
+    setFormData(prev => ({
+      ...prev,
+      monthlyIncome: income,
+      barChartData: updatedBarChartData
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -221,28 +241,30 @@ const UserForm = () => {
         ))}
 
         <h3 className="mt-4">Monthly Income & Expenses</h3>
-        <div className="mb-2">
-          <label>Monthly Income</label>
+        <div className="mb-4">
+          <label>Monthly Income (will be applied to all months)</label>
           <input
             type="number"
-            value={formData.barChartData[0].income}
-            onChange={(e) =>
-              handleBarChartChange(0, "income", e.target.value)
-            }
-            className="w-full p-2 border rounded mb-1"
-            required
-          />
-          <label>Monthly Expenses</label>
-          <input
-            type="number"
-            value={formData.barChartData[0].expenses}
-            onChange={(e) =>
-              handleBarChartChange(0, "expenses", e.target.value)
-            }
-            className="w-full p-2 border rounded"
+            value={formData.monthlyIncome}
+            onChange={(e) => handleMonthlyIncomeChange(e.target.value)}
+            className="w-full p-2 border rounded mb-4"
             required
           />
         </div>
+
+        <h3>Monthly Expenses (Last 6 Months)</h3>
+        {formData.barChartData.map((item, index) => (
+          <div key={index} className="mb-4">
+            <label>{item.month} Expenses</label>
+            <input
+              type="number"
+              value={item.expenses}
+              onChange={(e) => handleBarChartChange(index, "expenses", e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+        ))}
 
         <h3 className="mt-4">Budget Information</h3>
         <input

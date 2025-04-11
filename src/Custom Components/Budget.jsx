@@ -3,7 +3,7 @@ import { Progress } from "../components/ui/progress";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import { Pencil, X } from "lucide-react";
+import { Pencil, X, RefreshCw } from "lucide-react";
 import { collection, getDocs, query, orderBy, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase.config';
 
@@ -19,6 +19,7 @@ const Budget = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [newBudget, setNewBudget] = useState({
     name: '',
     budget: '',
@@ -26,49 +27,38 @@ const Budget = () => {
     balance: ''
   });
 
-  useEffect(() => {
-    let isMounted = true;
-    
-    const fetchBudgetData = async () => {
-      try {
-        setIsLoading(true);
-        const q = query(collection(db, "userFormData"), orderBy("timestamp", "desc"));
-        const querySnapshot = await getDocs(q);
-        const latestDoc = querySnapshot.docs[0];
-        
-        if (latestDoc && isMounted) {
-          const data = latestDoc.data();
-          setBudgetData({
-            totalBudget: Number(data.totalBudget) || 0,
-            totalUsed: Number(data.totalUsed) || 0,
-            totalLeft: Number(data.totalLeft) || 0,
-            budgets: Array.isArray(data.budgets) ? data.budgets.map(budget => ({
-              name: budget.name || '',
-              budget: Number(budget.budget) || 0,
-              used: Number(budget.used) || 0,
-              balance: Number(budget.balance) || 0
-            })) : []
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        if (isMounted) {
-          setError(error.message);
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+  const fetchBudgetData = async () => {
+    try {
+      setIsRefreshing(true);
+      const q = query(collection(db, "userFormData"), orderBy("timestamp", "desc"));
+      const querySnapshot = await getDocs(q);
+      const latestDoc = querySnapshot.docs[0];
+      
+      if (latestDoc) {
+        const data = latestDoc.data();
+        setBudgetData({
+          totalBudget: Number(data.totalBudget) || 0,
+          totalUsed: Number(data.totalUsed) || 0,
+          totalLeft: Number(data.totalLeft) || 0,
+          budgets: Array.isArray(data.budgets) ? data.budgets.map(budget => ({
+            name: budget.name || '',
+            budget: Number(budget.budget) || 0,
+            used: Number(budget.used) || 0,
+            balance: Number(budget.balance) || 0
+          })) : []
+        });
       }
-    };
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
+  useEffect(() => {
     fetchBudgetData();
-    const interval = setInterval(fetchBudgetData, 5000);
-    
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
   }, []);
 
   if (isLoading) {
@@ -173,7 +163,19 @@ const Budget = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="p-6 bg-gray-100 min-h-screen">
+      {/* Add Refresh Button */}
+      <div className="flex justify-end mb-4">
+        <Button 
+          onClick={fetchBudgetData}
+          disabled={isRefreshing}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </Button>
+      </div>
+
       <main className="flex-1 p-6 w-[81vw]">
         {/* Budget Summary */}
         <div className="grid grid-cols-3 gap-4 mt-6">

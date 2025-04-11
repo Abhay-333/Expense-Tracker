@@ -10,6 +10,7 @@ import Account from "./Custom Components/Account";
 import Debts from "./Custom Components/Debts";
 import Login from "./Custom Components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
+import News from "./Custom Components/News";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="account" element={<Account />} />
           <Route path="debts" element={<Debts />} />
           <Route path="ai" element={<AI />} />
+          <Route path="news" element={<News />} />
         </Route>
       </Routes>
     </>
@@ -45,6 +47,7 @@ function App() {
 }
 
 export default App;
+
 
 
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { FaSearch } from 'react-icons/fa';
+import { FaSync } from 'react-icons/fa';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase.config';
 
@@ -20,43 +20,43 @@ const MainContent = () => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      setIsRefreshing(true);
+      setError(null);
+      const q = query(collection(db, "userFormData"), orderBy("timestamp", "desc"));
+      const querySnapshot = await getDocs(q);
+      const latestDoc = querySnapshot.docs[0];
+      
+      if (latestDoc) {
+        const data = latestDoc.data();
+        setUserData({
+          totalBalance: Number(data.totalBalance) || 0,
+          budgetUsed: Number(data.budgetUsed) || 0,
+          debtsPending: Number(data.debtsPending) || 0,
+          pieChartData: {
+            Rent: Number(data.pieChartData?.Rent) || 0,
+            Food: Number(data.pieChartData?.Food) || 0,
+            Salary: Number(data.pieChartData?.Salary) || 0,
+            Freelance: Number(data.pieChartData?.Freelance) || 0,
+            InvestmentIncome: Number(data.pieChartData?.InvestmentIncome) || 0,
+          },
+          barChartData: data.barChartData || []
+        });
+      }
+    } catch (err) {
+      setError(err.message);
+      console.error("Error fetching data:", err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const q = query(collection(db, "userFormData"), orderBy("timestamp", "desc"));
-        const querySnapshot = await getDocs(q);
-        const latestDoc = querySnapshot.docs[0];
-        
-        if (latestDoc) {
-          const data = latestDoc.data();
-          setUserData({
-            totalBalance: Number(data.totalBalance) || 0,
-            budgetUsed: Number(data.budgetUsed) || 0,
-            debtsPending: Number(data.debtsPending) || 0,
-            pieChartData: {
-              Rent: Number(data.pieChartData?.Rent) || 0,
-              Food: Number(data.pieChartData?.Food) || 0,
-              Salary: Number(data.pieChartData?.Salary) || 0,
-              Freelance: Number(data.pieChartData?.Freelance) || 0,
-              InvestmentIncome: Number(data.pieChartData?.InvestmentIncome) || 0,
-            },
-            barChartData: data.barChartData || []
-          });
-        }
-      } catch (err) {
-        setError(err.message);
-        console.error("Error fetching data:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchData();
-    const interval = setInterval(fetchData, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   if (isLoading) return <div className="flex justify-center items-center h-full">Loading...</div>;
@@ -77,14 +77,16 @@ const MainContent = () => {
 
   return (
     <main className="flex-1 p-6">
-      {/* Search Bar */}
-      <div className="flex justify-between items-center mb-6">
-        <input
-          className="w-1/2 p-2 border rounded"
-          type="text"
-          placeholder="Search by month..."
-        />
-        <FaSearch className="text-gray-500" />
+      {/* Refresh Button */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={fetchData}
+          disabled={isRefreshing}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
+        >
+          <FaSync className={`${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing ? 'Refreshing...' : 'Refresh'}
+        </button>
       </div>
 
       {/* Stat Cards */}
@@ -132,7 +134,7 @@ const MainContent = () => {
 
         {/* Bar Chart */}
         <div className="bg-white p-6 rounded shadow-md">
-          <h3 className="font-bold mb-4">Last 6 Months Income and Expenses</h3>
+          <h3 className="font-bold mb-4">Current Month Income and Expenses</h3>
           <BarChart width={500} height={250} data={userData.barChartData}>
             <XAxis dataKey="month" />
             <YAxis />

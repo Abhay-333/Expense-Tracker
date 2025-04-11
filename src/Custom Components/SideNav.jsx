@@ -1,5 +1,5 @@
 import React from 'react'
-import { FaSearch, FaHome, FaWallet, FaUser, FaMoneyBillWave, FaRobot, FaSignOutAlt, FaFileAlt } from 'react-icons/fa';
+import { FaSearch, FaHome, FaWallet, FaUser, FaMoneyBillWave, FaRobot, FaSignOutAlt, FaFileAlt, FaNewspaper } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth } from '../firebase.config';
 import { signOut } from 'firebase/auth';
@@ -40,6 +40,9 @@ const SideNav = () => {
           </Link>
           <Link to='/userform' className="mb-4 flex items-center">
             <FaFileAlt className="mr-2" /> Update Form
+          </Link>
+          <Link to='news' className="mb-4 flex items-center">
+            <FaNewspaper className="mr-2" /> News
           </Link>
         </ul>
       </nav>

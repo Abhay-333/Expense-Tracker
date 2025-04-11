@@ -59,12 +59,7 @@ const UserForm = () => {
       InvestmentIncome: "",
     },
     barChartData: [
-      { month: 'Jan', income: '', expenses: '' },
-      { month: 'Feb', income: '', expenses: '' },
-      { month: 'Mar', income: '', expenses: '' },
-      { month: 'Apr', income: '', expenses: '' },
-      { month: 'May', income: '', expenses: '' },
-      { month: 'Jun', income: '', expenses: '' }
+      { month: new Date().toLocaleString('default', { month: 'short' }), income: '', expenses: '' }
     ],
     // Add account data
     accounts: [
@@ -225,31 +220,29 @@ const UserForm = () => {
           </div>
         ))}
 
-        <h3 className="mt-4">Bar Chart Data (Income & Expenses)</h3>
-        {formData.barChartData.map((data, index) => (
-          <div key={index} className="mb-2">
-            <label>{data.month} Income</label>
-            <input
-              type="number"
-              value={data.income}
-              onChange={(e) =>
-                handleBarChartChange(index, "income", e.target.value)
-              }
-              className="w-full p-2 border rounded mb-1"
-              required
-            />
-            <label>{data.month} Expenses</label>
-            <input
-              type="number"
-              value={data.expenses}
-              onChange={(e) =>
-                handleBarChartChange(index, "expenses", e.target.value)
-              }
-              className="w-full p-2 border rounded"
-              required
-            />
-          </div>
-        ))}
+        <h3 className="mt-4">Monthly Income & Expenses</h3>
+        <div className="mb-2">
+          <label>Monthly Income</label>
+          <input
+            type="number"
+            value={formData.barChartData[0].income}
+            onChange={(e) =>
+              handleBarChartChange(0, "income", e.target.value)
+            }
+            className="w-full p-2 border rounded mb-1"
+            required
+          />
+          <label>Monthly Expenses</label>
+          <input
+            type="number"
+            value={formData.barChartData[0].expenses}
+            onChange={(e) =>
+              handleBarChartChange(0, "expenses", e.target.value)
+            }
+            className="w-full p-2 border rounded"
+            required
+          />
+        </div>
 
         <h3 className="mt-4">Budget Information</h3>
         <input

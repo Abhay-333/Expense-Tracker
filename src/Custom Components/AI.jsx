@@ -6,8 +6,16 @@ const App = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const ai = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+  if (!apiKey) {
+    return <div className="text-red-500">Error: Missing Gemini API key</div>;
+  }
+
+  const ai = new GoogleGenerativeAI(apiKey);
 
   // Function to format the AI response
   const formatAIResponse = (text) => {
@@ -31,48 +39,41 @@ const App = () => {
     }).join('');
   };
 
-  const sendMessage = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!input.trim()) return;
 
-    // Add system prompt to structure the response
-    const systemPrompt = `
-    Please provide your response in a structured format using:
-    - Clear headings followed by colons
-    - Bullet points where appropriate
-    - Short, focused paragraphs
-    - Numbered lists for steps or sequences
-    - Keep the response concise and well-organized
-    
-    Respond to: ${input}
-    `;
+    setIsLoading(true);
+    setError(null);
 
-    setMessages((prev) => [...prev, { text: input, sender: 'user' }]);
-  
     try {
       const model = ai.getGenerativeModel({ model: 'gemini-2.0-flash' });
       const result = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: systemPrompt }] }],
+        contents: [{ role: 'user', parts: [{ text: input }] }],
       });
-  
-      console.log('API Result:', result);
-  
-      const response =
-        result?.response?.candidates?.[0]?.content?.parts
-          ?.map((part) => part.text)
-          .join('') || 'No response from AI.';
-  
-      setMessages((prev) => [...prev, { 
-        text: response,
-        sender: 'ai',
-        formatted: true
-      }]);
+
+      if (!result?.response?.candidates?.[0]?.content?.parts) {
+        throw new Error('Invalid response from AI');
+      }
+
+      const response = result.response.candidates[0].content.parts
+        .map((part) => part.text)
+        .join('');
+
+      setMessages((prev) => [
+        ...prev,
+        { text: input, sender: 'user' },
+        { text: response, sender: 'ai', formatted: true }
+      ]);
     } catch (error) {
-      console.error('Error:', error?.response?.data || error.message);
+      console.error('Error:', error);
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+      setInput('');
     }
-  
-    setInput('');
   };
-  
+
   return (
     <div className="flex h-screen w-full">
       {/* Sidebar */}
@@ -128,15 +129,20 @@ const App = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+            onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
           />
           <button 
-            onClick={sendMessage} 
+            onClick={handleSubmit} 
             className="bg-blue-500 p-3 rounded-r-lg hover:bg-blue-600 transition-colors"
           >
-            <Send className="w-5 h-5 text-white" />
+            {isLoading ? (
+              <div className="w-5 h-5 border-4 border-white border-dashed rounded-full animate-spin"></div>
+            ) : (
+              <Send className="w-5 h-5 text-white" />
+            )}
           </button>
         </div>
+        {error && <div className="text-red-500 p-4">{error}</div>}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase.config';
 
 const Debts = () => {
@@ -12,57 +12,21 @@ const Debts = () => {
   useEffect(() => {
     const fetchDebtData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "userFormData"));
-        const latestDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
-        
+        const q = query(collection(db, "userFormData"), orderBy("timestamp", "desc"));
+        const querySnapshot = await getDocs(q);
+        const latestDoc = querySnapshot.docs[0];
         if (latestDoc) {
           const data = latestDoc.data();
-          
-          // Calculate monthly salary from pieChartData
-          const monthlySalary = Number(data.pieChartData.Salary);
-          
-          // Create debts array with sample data (you can modify this based on your needs)
-          const debtsArray = [
-            {
-              title: "Home loan",
-              amount: monthlySalary * 12 * 5, // Example: 5 years of salary
-              emi: monthlySalary * 0.3, // 30% of monthly salary
-              timeLeft: "20 years"
-            },
-            {
-              title: "Car loan",
-              amount: monthlySalary * 12, // Example: 1 year of salary
-              emi: monthlySalary * 0.15, // 15% of monthly salary
-              timeLeft: "5 years"
-            },
-            {
-              title: "Personal Loan",
-              amount: monthlySalary * 6, // Example: 6 months of salary
-              emi: monthlySalary * 0.1, // 10% of monthly salary
-              timeLeft: "3 years"
-            },
-            {
-              title: "Credit Card",
-              bill: monthlySalary * 0.2, // 20% of monthly salary
-              deadline: "Month end"
-            }
-          ];
-
-          const totalMonthlyEMI = debtsArray.reduce((total, debt) => 
-            total + (debt.emi || 0), 0);
-
-          setDebtData({
-            debts: debtsArray,
-            totalEMI: totalMonthlyEMI,
-            salaryPercentage: Math.round((totalMonthlyEMI / monthlySalary) * 100)
-          });
+          setDebtData(data);
         }
       } catch (error) {
-        console.error("Error fetching debt data: ", error);
+        console.error("Error fetching data:", error);
       }
     };
 
     fetchDebtData();
+    const interval = setInterval(fetchDebtData, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { FaSearch } from 'react-icons/fa';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebase.config';
 
 const MainContent = () => {
@@ -18,24 +18,49 @@ const MainContent = () => {
     },
     barChartData: []
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "userFormData"));
-        // Get the latest document (assuming we want the most recent entry)
-        const latestDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+        setIsLoading(true);
+        setError(null);
+        const q = query(collection(db, "userFormData"), orderBy("timestamp", "desc"));
+        const querySnapshot = await getDocs(q);
+        const latestDoc = querySnapshot.docs[0];
+        
         if (latestDoc) {
           const data = latestDoc.data();
-          setUserData(data);
+          setUserData({
+            totalBalance: Number(data.totalBalance) || 0,
+            budgetUsed: Number(data.budgetUsed) || 0,
+            debtsPending: Number(data.debtsPending) || 0,
+            pieChartData: {
+              Rent: Number(data.pieChartData?.Rent) || 0,
+              Food: Number(data.pieChartData?.Food) || 0,
+              Salary: Number(data.pieChartData?.Salary) || 0,
+              Freelance: Number(data.pieChartData?.Freelance) || 0,
+              InvestmentIncome: Number(data.pieChartData?.InvestmentIncome) || 0,
+            },
+            barChartData: data.barChartData || []
+          });
         }
-      } catch (error) {
-        console.error("Error fetching data: ", error);
+      } catch (err) {
+        setError(err.message);
+        console.error("Error fetching data:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchUserData();
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
   }, []);
+
+  if (isLoading) return <div className="flex justify-center items-center h-full">Loading...</div>;
+  if (error) return <div className="text-red-500">Error: {error}</div>;
 
   // Transform pieChartData for expenses
   const pieDataExpenses = [
